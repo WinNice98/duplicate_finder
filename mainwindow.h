@@ -42,6 +42,8 @@ private slots:
 
     void on_about_button_clicked();
 
+    void on_help_button_clicked();
+
 private:
     QString current_dir;
     void initDatabase();

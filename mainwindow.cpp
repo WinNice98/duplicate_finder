@@ -12,6 +12,7 @@
 #include <QUrl>
 #include <QMessageBox>
 #include "aboutwindow.h"
+#include "helpwindow.h"
 
 void MainWindow::initDatabase() {
     QString dbPath = "duplicates.db";
@@ -352,6 +353,13 @@ void MainWindow::on_delete_selected_button_clicked()
 void MainWindow::on_about_button_clicked()
 {
     aboutwindow *window = new aboutwindow(this);
+    window->exec();
+}
+
+
+void MainWindow::on_help_button_clicked()
+{
+    helpwindow *window = new helpwindow(this);
     window->exec();
 }
 
