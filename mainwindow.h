@@ -40,6 +40,8 @@ private slots:
 
     void on_delete_selected_button_clicked();
 
+    void on_about_button_clicked();
+
 private:
     QString current_dir;
     void initDatabase();

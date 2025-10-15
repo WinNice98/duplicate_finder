@@ -11,6 +11,7 @@
 #include <QDesktopServices>
 #include <QUrl>
 #include <QMessageBox>
+#include "aboutwindow.h"
 
 void MainWindow::initDatabase() {
     QString dbPath = "duplicates.db";
@@ -345,5 +346,12 @@ void MainWindow::on_delete_selected_button_clicked()
 
     // Обновляем TreeView
     updateDuplicatesView();
+}
+
+
+void MainWindow::on_about_button_clicked()
+{
+    aboutwindow *window = new aboutwindow(this);
+    window->exec();
 }
 
