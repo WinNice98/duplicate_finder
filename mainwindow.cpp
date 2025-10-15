@@ -76,6 +76,15 @@ void MainWindow::startHashing(const QStringList &files, HashMethod method)
     connect(worker, &HashWorker::progress, this, [=](int current, int total){
         ui->progressBar->setMaximum(total);
         ui->progressBar->setValue(current);
+        if (current == total){
+            ui->current_path_edit->setEnabled(true);
+            ui->set_path_button->setEnabled(true);
+            ui->start_button->setEnabled(true);
+            ui->subcatalog_checker->setEnabled(true);
+            ui->delete_selected_button->setEnabled(true);
+            ui->set_path_button->setEnabled(true);
+            ui->comboBox->setEnabled(true);
+        }
     });
 
     // Запись в базу (GUI-поток)
@@ -108,6 +117,7 @@ MainWindow::MainWindow(QWidget *parent)
                    | Qt::WindowCloseButtonHint);
     setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
     ui->start_button->setEnabled(false);
+    ui->delete_selected_button->setEnabled(false);
 }
 
 MainWindow::~MainWindow()
@@ -211,6 +221,13 @@ void MainWindow::on_start_button_clicked()
 {
 
     if (QDir(current_dir).exists()) {
+        ui->current_path_edit->setEnabled(false);
+        ui->set_path_button->setEnabled(false);
+        ui->start_button->setEnabled(false);
+        ui->subcatalog_checker->setEnabled(false);
+        ui->delete_selected_button->setEnabled(false);
+        ui->set_path_button->setEnabled(false);
+        ui->comboBox->setEnabled(false);
         qDebug() << "Папка существует!";
         QStringList filePaths;
         QDirIterator it(get_current_dir(), QDir::Files,ui->subcatalog_checker->isChecked() ? QDirIterator::Subdirectories : QDirIterator::NoIteratorFlags);
@@ -246,8 +263,6 @@ void MainWindow::on_start_button_clicked()
     } else {
         qDebug() << "Папка не найдена!";
     }
-
-
 }
 
 
