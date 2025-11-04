@@ -133,7 +133,7 @@ void MainWindow::on_set_path_button_clicked()
     resetDatabase("duplicate.db");
     QString dir = QFileDialog::getExistingDirectory(
         this,                              // родительское окно
-        "Выбери папку для анализа",        // заголовок диалога
+        "Выберите папку для анализа",        // заголовок диалога
         QDir::homePath(),                  // стартовая директория
         QFileDialog::ShowDirsOnly          // только каталоги
     );
@@ -145,7 +145,7 @@ void MainWindow::on_set_path_button_clicked()
 
 void MainWindow::updateDuplicatesView() {
     QStandardItemModel *model = new QStandardItemModel(this);
-    model->setHorizontalHeaderLabels({"Select", "File", "Modified", "File Path"});
+    model->setHorizontalHeaderLabels({"Выделение", "Имя", "Дата изменения", "Путь"});
 
     // 1️⃣ Сначала читаем все дубликаты в структуру
     QSqlQuery query(db);

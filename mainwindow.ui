@@ -113,11 +113,6 @@
            <string>SHA-256</string>
           </property>
          </item>
-         <item>
-          <property name="text">
-           <string>Побитово</string>
-          </property>
-         </item>
         </widget>
        </item>
        <item row="7" column="0">
@@ -171,7 +166,7 @@
      <x>0</x>
      <y>0</y>
      <width>960</width>
-     <height>21</height>
+     <height>19</height>
     </rect>
    </property>
   </widget>
