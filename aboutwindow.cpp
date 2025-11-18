@@ -1,13 +1,14 @@
 #include "aboutwindow.h"
-#include "ui_aboutwindow.h"
 #include <QMovie>
+#include "ui_aboutwindow.h"
 
 aboutwindow::aboutwindow(QWidget *parent)
     : QDialog(parent)
     , ui(new Ui::aboutwindow)
 {
     ui->setupUi(this);
-    QMovie *movie = new QMovie(":/gif/source/about.gif"); // можно и обычный путь "C:/путь/к/файлу.gif"
+    QMovie *movie = new QMovie(
+        ":/gif/source/about.gif"); // можно и обычный путь "C:/путь/к/файлу.gif"
     ui->gif_label->setMovie(movie);
     movie->start();
     ui->program_name->setStyleSheet(R"(

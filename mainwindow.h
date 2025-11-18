@@ -17,15 +17,10 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 protected:
-
 public:
     MainWindow(QWidget *parent = nullptr);
-    void set_current_dir(QString dir){
-        current_dir = dir;
-    }
-    QString get_current_dir(){
-        return current_dir;
-    }
+    void set_current_dir(QString dir) { current_dir = dir; }
+    QString get_current_dir() { return current_dir; }
     ~MainWindow();
 
 private slots:

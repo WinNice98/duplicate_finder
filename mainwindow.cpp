@@ -1,20 +1,21 @@
 #include "mainwindow.h"
-#include "./ui_mainwindow.h"
-#include "hashworker.h"
-#include <QFileDialog>
-#include <QDirIterator>
-#include <QSqlQuery>
-#include <QSqlError>
-#include <QDebug>
 #include <QCryptographicHash>
-#include <QStandardItemModel>
+#include <QDebug>
 #include <QDesktopServices>
-#include <QUrl>
+#include <QDirIterator>
+#include <QFileDialog>
 #include <QMessageBox>
+#include <QSqlError>
+#include <QSqlQuery>
+#include <QStandardItemModel>
+#include <QUrl>
+#include "./ui_mainwindow.h"
 #include "aboutwindow.h"
+#include "hashworker.h"
 #include "helpwindow.h"
 
-void MainWindow::initDatabase() {
+void MainWindow::initDatabase()
+{
     QString dbPath = "duplicates.db";
 
     if (QFile::exists(dbPath)) {
@@ -75,10 +76,10 @@ void MainWindow::startHashing(const QStringList &files, HashMethod method)
     HashWorker *worker = new HashWorker(files, method, this);
 
     // Прогресс-бар
-    connect(worker, &HashWorker::progress, this, [=](int current, int total){
+    connect(worker, &HashWorker::progress, this, [=](int current, int total) {
         ui->progressBar->setMaximum(total);
         ui->progressBar->setValue(current);
-        if (current == total){
+        if (current == total) {
             ui->current_path_edit->setEnabled(true);
             ui->set_path_button->setEnabled(true);
             ui->start_button->setEnabled(true);
@@ -90,17 +91,26 @@ void MainWindow::startHashing(const QStringList &files, HashMethod method)
     });
 
     // Запись в базу (GUI-поток)
-    connect(worker, &HashWorker::fileHashed, this, [=](const QString &filename, const QString &path, const QString &hash, qint64 size, QDateTime modified){
-        QSqlQuery query(db); // db — соединение GUI-потока
-        query.prepare("INSERT INTO files (filename, path, hash, size, modified) VALUES (?, ?, ?, ?, ?)");
-        query.addBindValue(filename);
-        query.addBindValue(path);
-        query.addBindValue(hash);
-        query.addBindValue(size);
-        query.addBindValue(modified.toString(Qt::ISODate));
-        query.exec();
-        updateDuplicatesView();
-    });
+    connect(
+        worker,
+        &HashWorker::fileHashed,
+        this,
+        [=](const QString &filename,
+            const QString &path,
+            const QString &hash,
+            qint64 size,
+            QDateTime modified) {
+            QSqlQuery query(db); // db — соединение GUI-потока
+            query.prepare(
+                "INSERT INTO files (filename, path, hash, size, modified) VALUES (?, ?, ?, ?, ?)");
+            query.addBindValue(filename);
+            query.addBindValue(path);
+            query.addBindValue(hash);
+            query.addBindValue(size);
+            query.addBindValue(modified.toString(Qt::ISODate));
+            query.exec();
+            updateDuplicatesView();
+        });
 
     // Удаляем поток после завершения
     connect(worker, &QThread::finished, worker, &QObject::deleteLater);
@@ -113,9 +123,7 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    setWindowFlags(Qt::Window
-                   | Qt::WindowMinMaxButtonsHint
-                   | Qt::WindowSystemMenuHint
+    setWindowFlags(Qt::Window | Qt::WindowMinMaxButtonsHint | Qt::WindowSystemMenuHint
                    | Qt::WindowCloseButtonHint);
     setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
     ui->start_button->setEnabled(false);
@@ -127,15 +135,13 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-
 void MainWindow::on_set_path_button_clicked()
 {
     resetDatabase("duplicate.db");
-    QString dir = QFileDialog::getExistingDirectory(
-        this,                              // родительское окно
-        "Выберите папку для анализа",        // заголовок диалога
-        QDir::homePath(),                  // стартовая директория
-        QFileDialog::ShowDirsOnly          // только каталоги
+    QString dir = QFileDialog::getExistingDirectory(this, // родительское окно
+                                                    "Выберите папку для анализа", // заголовок диалога
+                                                    QDir::homePath(), // стартовая директория
+                                                    QFileDialog::ShowDirsOnly // только каталоги
     );
     set_current_dir(dir);
     ui->current_path_edit->setText(get_current_dir());
@@ -143,7 +149,8 @@ void MainWindow::on_set_path_button_clicked()
     initDatabase();
 }
 
-void MainWindow::updateDuplicatesView() {
+void MainWindow::updateDuplicatesView()
+{
     QStandardItemModel *model = new QStandardItemModel(this);
     model->setHorizontalHeaderLabels({"Выделение", "Имя", "Дата изменения", "Путь"});
 
@@ -168,8 +175,10 @@ void MainWindow::updateDuplicatesView() {
         // Попытка прочитать дату из разных форматов
         QString dateStr = query.value(3).toString();
         QDateTime dt = QDateTime::fromString(dateStr, Qt::ISODate);
-        if (!dt.isValid()) dt = QDateTime::fromString(dateStr, "yyyy-MM-dd HH:mm:ss");
-        if (!dt.isValid()) dt = QDateTime::currentDateTime(); // запасной вариант
+        if (!dt.isValid())
+            dt = QDateTime::fromString(dateStr, "yyyy-MM-dd HH:mm:ss");
+        if (!dt.isValid())
+            dt = QDateTime::currentDateTime(); // запасной вариант
 
         filesByHash[hash].append({filename, {dt, path}});
     }
@@ -182,7 +191,8 @@ void MainWindow::updateDuplicatesView() {
         // находим самую новую дату
         QDateTime newest = QDateTime();
         for (auto &f : fileList) {
-            if (!newest.isValid() || f.second.first > newest) newest = f.second.first;
+            if (!newest.isValid() || f.second.first > newest)
+                newest = f.second.first;
         }
 
         // создаём элемент хэша
@@ -195,12 +205,14 @@ void MainWindow::updateDuplicatesView() {
             QStandardItem *checkItem = new QStandardItem();
             checkItem->setFlags(checkItem->flags() | Qt::ItemIsUserCheckable);
             checkItem->setFlags(checkItem->flags() & ~Qt::ItemIsEditable);
-            checkItem->setData(f.second.first < newest ? Qt::Checked : Qt::Unchecked, Qt::CheckStateRole);
+            checkItem->setData(f.second.first < newest ? Qt::Checked : Qt::Unchecked,
+                               Qt::CheckStateRole);
 
             QStandardItem *fileItem = new QStandardItem(f.first);
             fileItem->setFlags(fileItem->flags() & ~Qt::ItemIsEditable);
 
-            QStandardItem *dateItem = new QStandardItem(f.second.first.toString("dd.MM.yyyy HH:mm:ss"));
+            QStandardItem *dateItem = new QStandardItem(
+                f.second.first.toString("dd.MM.yyyy HH:mm:ss"));
             dateItem->setFlags(dateItem->flags() & ~Qt::ItemIsEditable);
 
             QStandardItem *pathItem = new QStandardItem(f.second.second);
@@ -221,7 +233,6 @@ void MainWindow::updateDuplicatesView() {
 
 void MainWindow::on_start_button_clicked()
 {
-
     if (QDir(current_dir).exists()) {
         ui->current_path_edit->setEnabled(false);
         ui->set_path_button->setEnabled(false);
@@ -232,7 +243,10 @@ void MainWindow::on_start_button_clicked()
         ui->comboBox->setEnabled(false);
         qDebug() << "Папка существует!";
         QStringList filePaths;
-        QDirIterator it(get_current_dir(), QDir::Files,ui->subcatalog_checker->isChecked() ? QDirIterator::Subdirectories : QDirIterator::NoIteratorFlags);
+        QDirIterator it(get_current_dir(),
+                        QDir::Files,
+                        ui->subcatalog_checker->isChecked() ? QDirIterator::Subdirectories
+                                                            : QDirIterator::NoIteratorFlags);
 
         while (it.hasNext()) {
             QString path;
@@ -267,16 +281,15 @@ void MainWindow::on_start_button_clicked()
     }
 }
 
-
 void MainWindow::on_current_path_edit_returnPressed()
 {
     set_current_dir(ui->current_path_edit->text());
 }
 
-
 void MainWindow::on_treeView_doubleClicked(const QModelIndex &index)
 {
-    if (!index.isValid()) return;
+    if (!index.isValid())
+        return;
 
     // Получаем путь к файлу из второго столбца ("File")
     QString filePath = index.siblingAtColumn(3).data().toString();
@@ -286,27 +299,30 @@ void MainWindow::on_treeView_doubleClicked(const QModelIndex &index)
     }
 }
 
-
 void MainWindow::on_delete_selected_button_clicked()
 {
-    if (!ui->treeView->model()) return;
+    if (!ui->treeView->model())
+        return;
 
-    QStandardItemModel *model = qobject_cast<QStandardItemModel*>(ui->treeView->model());
-    if (!model) return;
+    QStandardItemModel *model = qobject_cast<QStandardItemModel *>(ui->treeView->model());
+    if (!model)
+        return;
 
     QList<QString> filesToDelete;
 
     // проходим по всем хэш-группам
     for (int i = 0; i < model->rowCount(); ++i) {
         QStandardItem *hashItem = model->item(i, 0);
-        if (!hashItem) continue;
+        if (!hashItem)
+            continue;
 
         // проходим по дочерним элементам
         for (int j = 0; j < hashItem->rowCount(); ++j) {
             QStandardItem *checkItem = hashItem->child(j, 0); // чекбокс
-            QStandardItem *pathItem  = hashItem->child(j, 3); // путь к файлу
+            QStandardItem *pathItem = hashItem->child(j, 3);  // путь к файлу
 
-            if (!checkItem || !pathItem) continue;
+            if (!checkItem || !pathItem)
+                continue;
 
             if (checkItem->data(Qt::CheckStateRole) == Qt::Checked) {
                 filesToDelete.append(pathItem->text());
@@ -321,12 +337,13 @@ void MainWindow::on_delete_selected_button_clicked()
 
     // Подтверждение
     QMessageBox::StandardButton reply = QMessageBox::question(
-        this, "Удаление",
+        this,
+        "Удаление",
         QString("Вы действительно хотите удалить %1 выбранных файлов?").arg(filesToDelete.size()),
-        QMessageBox::Yes | QMessageBox::No
-        );
+        QMessageBox::Yes | QMessageBox::No);
 
-    if (reply != QMessageBox::Yes) return;
+    if (reply != QMessageBox::Yes)
+        return;
 
     // Удаление файлов и записи из базы
     for (const QString &filePath : filesToDelete) {
@@ -349,17 +366,14 @@ void MainWindow::on_delete_selected_button_clicked()
     updateDuplicatesView();
 }
 
-
 void MainWindow::on_about_button_clicked()
 {
     aboutwindow *window = new aboutwindow(this);
     window->exec();
 }
 
-
 void MainWindow::on_help_button_clicked()
 {
     helpwindow *window = new helpwindow(this);
     window->exec();
 }
-
